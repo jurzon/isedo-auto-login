@@ -28,17 +28,25 @@ def prihlas_a_priprav_objednavku():
     try:
         wait = WebDriverWait(driver, 15) # Predĺžený čas na 15s
 
-        # KROK 1: Prihlásenie
+       # KROK 1: Prihlásenie
         print("Prihlasujem sa...")
-        wait.until(EC.element_to_be_clickable((By.ID, "UserName_I"))).send_keys(MENO)
         
-        # Kliknutie na atrapu hesla aby sa zobrazil input
+        # Meno - kliknúť a potom písať
+        user_field = wait.until(EC.element_to_be_clickable((By.ID, "UserName_I")))
+        user_field.click() # Pridané kliknutie pre istotu
+        user_field.clear()
+        user_field.send_keys(MENO)
+        
+        # Heslo - DevExpress trik s kliknutím na atrapu
         wait.until(EC.element_to_be_clickable((By.ID, "Password_I_CLND"))).click()
         
-        # Vloženie hesla
-        wait.until(EC.presence_of_element_located((By.ID, "Password_I"))).send_keys(HESLO)
+        # Vloženie hesla do skutočného poľa
+        pass_field = wait.until(EC.presence_of_element_located((By.ID, "Password_I")))
+        pass_field.click() # Pridané kliknutie
+        pass_field.send_keys(HESLO)
         
         # Klik na prihlásiť
+        time.sleep(1) # Malá pauza pred kliknutím na odoslanie
         wait.until(EC.element_to_be_clickable((By.ID, "SignInButton"))).click()
 
         # KROK 2: Prechod na "Tvorba objednávky"
@@ -47,13 +55,13 @@ def prihlas_a_priprav_objednavku():
         menu_tvorba = wait.until(EC.element_to_be_clickable((By.ID, "applicationMenu_DXI1_T")))
         menu_tvorba.click()
 
-        # KROK 3: Nastavenie kurzora
-        # Dáme stránke 2 sekundy pauzu, nech sa prekreslí (ochrana proti session error)
-        time.sleep(2) 
+        # KROK 3: Aktivácia políčka pre recept
+        time.sleep(2) #
         
         print("Aktivujem políčko pre recept...")
         policko_recept = wait.until(EC.element_to_be_clickable((By.ID, "numberEdit_I")))
         policko_recept.click()
+        policko_recept.clear() # Pridané: vymaže políčko pred skenovaním
 
         print("HOTOVO! Môžete skenovať.")
 
