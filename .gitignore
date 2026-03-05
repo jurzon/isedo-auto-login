@@ -1,0 +1,10 @@
+# Virtuálne prostredie a knižnice
+.venv/
+__pycache__/
+
+# Citlivé údaje (Toto zabezpečí, že sa vaše heslo nedostane na web!)
+config.json
+
+# Rôzne systémové súbory (Windows/Mac)
+.DS_Store
+Thumbs.db
