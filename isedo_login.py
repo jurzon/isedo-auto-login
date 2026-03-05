@@ -4,6 +4,7 @@ from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 import json
 import sys
+import time
 
 # --- NAČÍTANIE ÚDAJOV Z CONFIGU ---
 try:
@@ -12,40 +13,55 @@ try:
         MENO = config['MENO']
         HESLO = config['HESLO']
 except FileNotFoundError:
-    print("Chyba: Súbor config.json chýba. Vytvorte ho podľa súboru config.example.json")
+    print("CHYBA: Súbor config.json neexistuje. Vytvorte ho!")
     sys.exit(1)
-# ----------------------------------
 
 def prihlas_a_priprav_objednavku():
     options = webdriver.ChromeOptions()
     options.add_experimental_option("detach", True)
     
-    print("1. Otváram prehliadač...")
+    print("Spúšťam prehliadač...")
     driver = webdriver.Chrome(options=options)
     driver.get("https://www.isedo.sk/signin")
     driver.maximize_window()
 
     try:
-        wait = WebDriverWait(driver, 10)
+        wait = WebDriverWait(driver, 15) # Predĺžený čas na 15s
 
-        print("2. Zadávam prihlasovacie údaje...")
+        # KROK 1: Prihlásenie
+        print("Prihlasujem sa...")
         wait.until(EC.element_to_be_clickable((By.ID, "UserName_I"))).send_keys(MENO)
+        
+        # Kliknutie na atrapu hesla aby sa zobrazil input
         wait.until(EC.element_to_be_clickable((By.ID, "Password_I_CLND"))).click()
+        
+        # Vloženie hesla
         wait.until(EC.presence_of_element_located((By.ID, "Password_I"))).send_keys(HESLO)
+        
+        # Klik na prihlásiť
         wait.until(EC.element_to_be_clickable((By.ID, "SignInButton"))).click()
 
-        print("3. Presúvam sa do sekcie 'Tvorba objednávky'...")
+        # KROK 2: Prechod na "Tvorba objednávky"
+        # Dôležité: Čakáme, kým sa objaví menu po prihlásení
+        print("Čakám na hlavné menu...")
         menu_tvorba = wait.until(EC.element_to_be_clickable((By.ID, "applicationMenu_DXI1_T")))
         menu_tvorba.click()
 
-        print("4. Nastavujem kurzor pre čiarový kód...")
+        # KROK 3: Nastavenie kurzora
+        # Dáme stránke 2 sekundy pauzu, nech sa prekreslí (ochrana proti session error)
+        time.sleep(2) 
+        
+        print("Aktivujem políčko pre recept...")
         policko_recept = wait.until(EC.element_to_be_clickable((By.ID, "numberEdit_I")))
         policko_recept.click()
 
-        print("Hotovo! Systém je pripravený na skenovanie alebo písanie.")
+        print("HOTOVO! Môžete skenovať.")
 
     except Exception as e:
-        print(f"Chyba pri automatizácii: {e}")
+        print(f"Chyba: {e}")
+        # Prehliadač nezavrieme, nech vidíte, kde robot skončil
+        input("Stlačte Enter pre zatvorenie...")
+        driver.quit()
 
 if __name__ == "__main__":
     prihlas_a_priprav_objednavku()
